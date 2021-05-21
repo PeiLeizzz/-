@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduation.ssm.dao.TopicDao">
+
+    <resultMap type="com.graduation.ssm.entity.Topic" id="Topic">
+        <id property="topic_id" column="topic_id" />
+        <result property="topic_name" column="topic_name" />
+        <result property="start_time" column="start_time" />
+        <result property="end_time" column="end_time" />
+        <result property="max_person" column="max_person" />
+        <result property="topic_type" column="topic_type" />
+        <association property="teacher" column="id" javaType="com.graduation.ssm.entity.Teacher" select="getTeacher" />
+    </resultMap>
+
+    <select id="getAllTopicList" resultMap="Topic">
+        SELECT *
+        FROM topic
+    </select>
+    
+    <select id="getTeacher" resultType="com.graduation.ssm.entity.Teacher">
+        SELECT *
+        FROM teacher
+        LEFT JOIN user
+        ON teacher.id = user.id
+        WHERE teacher.id = #{id}
+    </select>
+</mapper>
