@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduation.ssm.dao.StudentDao">
+    <resultMap type="com.graduation.ssm.entity.Student" id="Student">
+        <id property="id" column="id" />
+        <result property="uname" column="teacher_name" />
+        <result property="sex" column="sex" />
+        <result property="college" column="college" />
+        <result property="major" column="major" />
+        <result property="age" column="age" />
+        <result property="exam_number" column="exam_number" />
+        <result property="vita" column="vita" />
+        <result property="outlook" column="outlook" />
+        <result property="utype" column="utype" />
+    </resultMap>
+
+    <select id="getPreSelectStudentList" resultMap="Student">
+        SELECT user.id, uname, major, vita
+        FROM student
+        LEFT JOIN user
+        ON student.id = user.id
+        LEFT JOIN choice
+        ON student.id = choice.id
+        WHERE choice.topic_id = #{topic_id}
+        AND choice.choice_state = 0
+    </select>
+</mapper>
