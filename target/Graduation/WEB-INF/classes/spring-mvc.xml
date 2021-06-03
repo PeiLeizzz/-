@@ -39,6 +39,12 @@
     <!-- 静态资源映射 -->
     <mvc:resources mapping="/static/**" location="/static/" cache-period="31536000"/>
 
+    <!--
+        配置拦截器再用 ajax 会有问题
+        简单的说,就是发送的是ajax异步请求，只是想获取一个json封装的数据，
+        而在拦截器中却硬生生的加了个modelAndView，而且controller层返回的数据中也并没有实例modelAndView。
+        这个modelAndView也不是ajax请求想要的返回数据。
+    -->
     <!--&lt;!&ndash;配置拦截器&ndash;&gt;-->
 <!--    <mvc:interceptors>-->
 <!--        &lt;!&ndash;-->
@@ -68,7 +74,5 @@
 <!--            <bean class="com.graduation.ssm.interceptor.BackToLoginInterceptor"/>-->
 <!--        </mvc:interceptor>-->
 <!--    </mvc:interceptors>-->
-
-
 
 </beans>

@@ -8,20 +8,320 @@
         <result property="start_time" column="start_time" />
         <result property="end_time" column="end_time" />
         <result property="max_person" column="max_person" />
+        <result property="new_person" column="new_person" />
         <result property="topic_type" column="topic_type" />
-        <association property="teacher" column="id" javaType="com.graduation.ssm.entity.Teacher" select="getTeacher" />
+        <result property="choice_state" column="choice_state" />
+        <association property="now_person" column="topic_id" javaType="java.lang.Integer" select="getNowPerson" />
+        <association property="teacher" javaType="com.graduation.ssm.entity.Teacher" resultMap="TeacherResult" />
+    </resultMap>
+    <resultMap id="TeacherResult" type="com.graduation.ssm.entity.Teacher">
+        <id property="id" column="id" />
+        <result property="uname" column="uname" />
+        <result property="sex" column="sex" />
+        <result property="college" column="college" />
+        <result property="age" column="age" />
+        <result property="title" column="title" />
+        <result property="mail" column="mail" />
+        <result property="photo" column="photo" />
+        <result property="vita" column="vita" />
+        <result property="tel" column="tel" />
+        <result property="place" column="place" />
+        <result property="utype" column="utype" />
     </resultMap>
 
-    <select id="getAllTopicList" resultMap="Topic">
-        SELECT *
+    <select id="getTopicWithStudent" parameterType="java.lang.String" resultMap="Topic">
+        SELECT topic.topic_id, topic_name, max_person, end_time, topic_type, choice_state, teacher.id, college, uname
         FROM topic
-    </select>
-    
-    <select id="getTeacher" resultType="com.graduation.ssm.entity.Teacher">
-        SELECT *
-        FROM teacher
+        LEFT JOIN choice
+        ON topic.topic_id = choice.topic_id
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
         LEFT JOIN user
         ON teacher.id = user.id
-        WHERE teacher.id = #{id}
+        WHERE choice.id = #{student_id} and
+            (choice_state = 1 or
+                (choice_state = 0) -- and end_time > CURRENT_TIMESTAMP)
+            )
     </select>
+
+    <select id="studentGetAllTopicCount" resultType="java.lang.Integer">
+        SELECT DISTINCT COUNT(*)
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        LEFT JOIN user
+        ON teacher.id = user.id
+        WHERE topic.end_time > CURRENT_TIMESTAMP
+        and topic.max_person > (
+            SELECT COUNT(*)
+            FROM choice as c
+            WHERE c.choice_state = 1
+              and topic.topic_id = c.topic_id
+        )
+        <if test="student_id != null">
+            and topic.topic_id not in (
+                SELECT c.topic_id
+                FROM choice as c
+                WHERE c.id = #{student_id}
+            )
+        </if>
+    </select>
+
+    <select id="studentGetAllTopicList" resultMap="Topic">
+        SELECT DISTINCT topic.topic_id, topic_name, max_person, end_time, topic_type, teacher.id, college, uname
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        LEFT JOIN user
+        ON teacher.id = user.id
+        WHERE topic.end_time > CURRENT_TIMESTAMP
+        and topic.max_person > (
+        SELECT COUNT(*)
+        FROM choice as c
+        WHERE c.choice_state = 1
+        and topic.topic_id = c.topic_id
+        )
+        <if test="student_id != null">
+            and topic.topic_id not in (
+            SELECT c.topic_id
+            FROM choice as c
+            WHERE c.id = #{student_id}
+            )
+        </if>
+
+        limit #{page.startPos}, #{page.pageSize}
+    </select>
+
+    <select id="studentGetTopicListCountBySearch" resultType="java.lang.Integer">
+        SELECT DISTINCT COUNT(*)
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        WHERE topic.end_time > CURRENT_TIMESTAMP
+        and topic.max_person > (
+            SELECT COUNT(*)
+            FROM choice as c
+            WHERE c.choice_state = 1
+            and topic.topic_id = c.topic_id
+        )
+        <if test="search != null">
+            <if test="search.college != null">
+                and teacher.college = #{search.college}
+            </if>
+            <if test="search.teacher_id != null">
+                and teacher.id = #{search.teacher_id}
+            </if>
+        </if>
+        <if test="search.topic_name != null">
+            and topic.topic_name like concat('%', #{search.topic_name}, '%')
+        </if>
+    </select>
+
+    <select id="studentGetTopicListBySearch" resultMap="Topic">
+        SELECT topic.topic_id, topic_name, max_person, teacher.id, uname, college, end_time
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        LEFT JOIN user
+        ON user.id = teacher.id
+        WHERE topic.end_time > CURRENT_TIMESTAMP
+        and topic.max_person > (
+            SELECT COUNT(*)
+            FROM choice as c
+            WHERE c.choice_state = 1
+            and topic.topic_id = c.topic_id
+        )
+        <if test="search != null">
+            <if test="search.college != null">
+                and teacher.college = #{search.college}
+            </if>
+            <if test="search.teacher_id != null">
+                and teacher.id = #{search.teacher_id}
+            </if>
+        </if>
+        <if test="search.topic_name != null">
+            and topic.topic_name like concat('%', #{search.topic_name}, '%')
+        </if>
+
+        limit #{page.startPos}, #{page.pageSize}
+    </select>
+
+    <select id="getTopicListCountOfTeacherBySearch" resultType="java.lang.Integer">
+        SELECT DISTINCT COUNT(*)
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        WHERE topic.id = #{search.teacher_id}
+        <if test="search.topic_status != null">
+            <if test="search.topic_status == 1">
+                and not (topic.max_person > (
+                SELECT COUNT(*)
+                FROM choice as c
+                WHERE c.choice_state = 1
+                and topic.topic_id = c.topic_id
+                ))
+            </if>
+            <if test="search.topic_status == 0">
+                and topic.max_person > (
+                SELECT COUNT(*)
+                FROM choice as c
+                WHERE c.choice_state = 1
+                and topic.topic_id = c.topic_id
+                )
+            </if>
+        </if>
+        <if test="search.topic_name != null">
+            and topic.topic_name like concat('%', #{search.topic_name}, '%')
+        </if>
+    </select>
+
+    <select id="getTopicListOfTeacherBySearch" resultMap="Topic">
+        SELECT topic.topic_id, topic_name, max_person, SUM(IF(choice.choice_state = 0, 1, 0)) as new_person
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        LEFT JOIN choice
+        ON topic.topic_id = choice.topic_id
+        WHERE topic.id = #{search.teacher_id}
+        <if test="search.topic_status != null">
+            <if test="search.topic_status == 1">
+                and not (topic.max_person > (
+                SELECT COUNT(*)
+                FROM choice as c
+                WHERE c.choice_state = 1
+                and topic.topic_id = c.topic_id
+                ))
+            </if>
+            <if test="search.topic_status == 0">
+                and topic.max_person > (
+                SELECT COUNT(*)
+                FROM choice as c
+                WHERE c.choice_state = 1
+                and topic.topic_id = c.topic_id
+                )
+            </if>
+        </if>
+        <if test="search.topic_name != null">
+            and topic.topic_name like concat('%', #{search.topic_name}, '%')
+        </if>
+        GROUP BY topic.topic_id
+
+        limit #{page.startPos}, #{page.pageSize}
+    </select>
+
+    <select id="teacherGetTopicListCount" resultType="java.lang.Integer">
+        SELECT DISTINCT COUNT(*)
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        WHERE topic.end_time > CURRENT_TIMESTAMP
+        and topic.max_person > (
+        SELECT COUNT(*)
+        FROM choice as c
+        WHERE c.choice_state = 1
+        and topic.topic_id = c.topic_id
+        )
+        <if test="search != null">
+            <if test="search.college != null">
+                and teacher.college = #{search.college}
+            </if>
+            <if test="search.teacher_id != null">
+                and teacher.id = #{search.teacher_id}
+            </if>
+        </if>
+        <if test="search.topic_name != null">
+            and topic.topic_name like concat('%', #{search.topic_name}, '%')
+        </if>
+    </select>
+
+    <select id="teacherGetTopicList" resultMap="Topic">
+        SELECT topic.topic_id, topic_name, max_person, teacher.id, uname, college, end_time
+        FROM topic
+        LEFT JOIN teacher
+        ON topic.id = teacher.id
+        LEFT JOIN user
+        ON user.id = teacher.id
+        WHERE topic.end_time > CURRENT_TIMESTAMP
+        and topic.max_person > (
+            SELECT COUNT(*)
+            FROM choice as c
+            WHERE c.choice_state = 1
+            and topic.topic_id = c.topic_id
+        )
+        <if test="search != null">
+            <if test="search.college != null">
+                and teacher.college = #{search.college}
+            </if>
+            <if test="search.teacher_id != null">
+                and teacher.id = #{search.teacher_id}
+            </if>
+        </if>
+        <if test="search.topic_name != null">
+            and topic.topic_name like concat('%', #{search.topic_name}, '%')
+        </if>
+
+        limit #{page.startPos}, #{page.pageSize}
+    </select>
+
+    <select id="getNowPerson" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM choice
+        WHERE choice.topic_id = #{topic_id}
+        AND choice.choice_state = 1
+    </select>
+
+    <select id="getMaxPerson" resultType="java.lang.Integer">
+        SELECT max_person
+        FROM topic
+        WHERE topic_id = #{topic_id}
+    </select>
+
+    <select id="getStudentChoice" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM choice
+        WHERE choice.id = #{student_id}
+    </select>
+
+    <delete id="cancelSelect">
+        DELETE FROM choice
+        WHERE topic_id = #{topic_id}
+        AND id = #{student_id}
+    </delete>
+
+    <insert id="selectTopic">
+        INSERT INTO choice
+        VALUES(null, #{student_id}, #{topic_id}, 0)
+    </insert>
+
+    <update id="updateAgree">
+        UPDATE choice
+        SET choice.choice_state = 1
+        WHERE topic_id = #{topic_id}
+        AND id = #{student_id}
+    </update>
+
+    <delete id="updateDisagree">
+        DELETE FROM choice
+        WHERE topic_id = #{topic_id}
+        AND id = #{student_id}
+        AND choice_state = 0
+    </delete>
+
+    <delete id="deleteTopicInfo">
+        DELETE FROM topic_info
+        WHERE topic_id = #{topic_id}
+    </delete>
+
+    <delete id="deleteTopic">
+        DELETE FROM topic
+        WHERE topic_id = #{topic_id}
+    </delete>
+
+<!--    <select id="getTeacher" resultType="com.graduation.ssm.entity.Teacher">-->
+<!--        SELECT teacher.id, teacher.college, user.name-->
+<!--        FROM teacher-->
+<!--        LEFT JOIN user-->
+<!--        ON teacher.id = user.id-->
+<!--        WHERE teacher.id = #{id}-->
+<!--    </select>-->
 </mapper>
