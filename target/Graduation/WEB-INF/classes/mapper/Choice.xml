@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduation.ssm.dao.ChoiceDao">
+    <resultMap type="com.graduation.ssm.entity.Choice" id="Choice">
+        <id property="choice_id" column="choice_id" />
+        <result property="topic_id" column="topic_d" />
+        <result property="student_id" column="student_id" />
+        <result property="choice_state" column="choice_state" />
+    </resultMap>
+
+    <select id="getStudentChoiceCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM choice
+        WHERE choice.id = #{student_id}
+    </select>
+
+    <delete id="cancelSelect">
+        DELETE FROM choice
+        WHERE topic_id = #{topic_id}
+        AND id = #{student_id}
+    </delete>
+
+    <insert id="selectTopic">
+        INSERT INTO choice
+        VALUES(null, #{student_id}, #{topic_id}, 0)
+    </insert>
+
+    <update id="updateAgree">
+        UPDATE choice
+        SET choice.choice_state = 1
+        WHERE topic_id = #{topic_id}
+          AND id = #{student_id}
+    </update>
+
+    <delete id="updateDisagree">
+        DELETE FROM choice
+        WHERE topic_id = #{topic_id}
+          AND id = #{student_id}
+          AND choice_state = 0
+    </delete>
+</mapper>

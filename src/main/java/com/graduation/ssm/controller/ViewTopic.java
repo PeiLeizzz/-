@@ -1,8 +1,8 @@
 package com.graduation.ssm.controller;
 
-import com.graduation.ssm.entity.Page;
-import com.graduation.ssm.entity.StudentTopicSearch;
-import com.graduation.ssm.entity.TeacherTopicSearch;
+import com.graduation.ssm.util.Page;
+import com.graduation.ssm.util.StudentTopicSearch;
+import com.graduation.ssm.util.TeacherTopicSearch;
 import com.graduation.ssm.service.TeacherTopicService;
 import com.graduation.ssm.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import com.graduation.ssm.service.StudentTopicService;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * 路由功能：接收对于课题的查看请求
+ */
 @RequestMapping(value = "/view", method = RequestMethod.GET)
 @Controller
 public class ViewTopic {

@@ -1,50 +1,87 @@
 package com.graduation.ssm.service;
 
+import com.graduation.ssm.dao.ChoiceDao;
 import com.graduation.ssm.dao.StudentDao;
 import com.graduation.ssm.dao.TopicDao;
-import com.graduation.ssm.entity.Page;
+import com.graduation.ssm.util.Page;
 import com.graduation.ssm.entity.Student;
-import com.graduation.ssm.entity.TeacherTopicSearch;
+import com.graduation.ssm.util.TeacherTopicSearch;
 import com.graduation.ssm.entity.Topic;
 import com.graduation.ssm.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * 用于处理教师与课题、选择之间交互的逻辑
+ */
 @Service(value = "TeacherTopicServiceImpl")
 @Transactional
 public class TeacherTopicServiceImpl implements TeacherTopicService {
 
     @Autowired
     private TopicDao topicDao;
+
     @Autowired
     private StudentDao studentDao;
 
+    @Autowired
+    private ChoiceDao choiceDao;
+
+    /**
+     * 获取教师发布的课题列表
+     * @param teacherTopicSearch 教师搜索课题对象，在这里属性只有该教师的 teacher_id
+     * @param p 分页控制对象
+     * @return 课题列表数据集合
+     */
     @Override
     public ResultUtil getTopicListOfTeacher(TeacherTopicSearch teacherTopicSearch, Page p) {
-        List<Topic> topics = topicDao.getTopicListOfTeacherBySearch(teacherTopicSearch, p);
-        ResultUtil resultUtil = new ResultUtil();
-        resultUtil.setCode(0);
-        resultUtil.setCount(topicDao.getTopicListCountOfTeacherBySearch(teacherTopicSearch));
-        System.out.println(resultUtil.getCount());
-        resultUtil.setData(topics);
+        ResultUtil resultUtil = null;
+        try {
+            List<Topic> topics = topicDao.getTopicListOfTeacherBySearch(teacherTopicSearch, p);
+            resultUtil = new ResultUtil();
+            resultUtil.setCode(0);
+            resultUtil.setCount(topicDao.getTopicListCountOfTeacherBySearch(teacherTopicSearch));
+            resultUtil.setData(topics);
+        }
+        catch (Exception e) {
+            System.out.println(e);
+            resultUtil = ResultUtil.error("获取教师发布的课题列表出错！");
+        }
         return resultUtil;
     }
 
+    /**
+     * 获取教师搜索课题的列表
+     * @param teacherTopicSearch 教师搜索课题对象
+     * @param p 分页控制对象
+     * @return 课题列表数据集合
+     */
     @Override
     public ResultUtil getTopicList(TeacherTopicSearch teacherTopicSearch, Page p) {
-        List<Topic> topics = topicDao.teacherGetTopicList(teacherTopicSearch, p);
-        ResultUtil resultUtil = new ResultUtil();
-        resultUtil.setCode(0);
-        resultUtil.setCount(topicDao.teacherGetTopicListCount(teacherTopicSearch));
-        System.out.println(resultUtil.getCount());
-        resultUtil.setData(topics);
+        ResultUtil resultUtil = null;
+        try {
+            List<Topic> topics = topicDao.teacherGetTopicList(teacherTopicSearch, p);
+            resultUtil = new ResultUtil();
+            resultUtil.setCode(0);
+            resultUtil.setCount(topicDao.teacherGetTopicListCount(teacherTopicSearch));
+            resultUtil.setData(topics);
+        }
+        catch (Exception e) {
+            System.out.println(e);
+            resultUtil = ResultUtil.error("教师获取所有课题列表出错！");
+        }
         return resultUtil;
     }
 
+    /**
+     * 教师同意学生对某个该教师发布的课题的预选请求
+     * @param student_id 学生 id
+     * @param topic_id 课题 id
+     * @return 同意是否成功结果
+     */
     @Override
     public ResultUtil agreeStudent(String student_id, String topic_id) {
         // 先通过 topic_id检查人数是否已满
@@ -65,7 +102,7 @@ public class TeacherTopicServiceImpl implements TeacherTopicService {
                     return resultUtil;
                 }
                 String t_id = tmp.getTopic_id();
-                int state = tmp.getChoice_state();
+                int state = tmp.getChoices().get(0).getChoice_state();
                 if (!t_id.equals(topic_id)) {
                     resultUtil = ResultUtil.error("该学生已经取消对于该课题的预选，同意失败！");
                 }
@@ -73,7 +110,7 @@ public class TeacherTopicServiceImpl implements TeacherTopicService {
                     resultUtil = ResultUtil.error("您已同意该学生的预选，同意失败，请刷新页面！");
                 }
                 else {
-                    int res = topicDao.updateAgree(student_id, topic_id);
+                    int res = choiceDao.updateAgree(student_id, topic_id);
                     if (res > 0) {
                         resultUtil = ResultUtil.ok("同意成功！");
                         if (now_person + 1 == max_person) {
@@ -98,6 +135,12 @@ public class TeacherTopicServiceImpl implements TeacherTopicService {
         return resultUtil;
     }
 
+    /**
+     * 教师拒绝学生对某个该教师发布的课题的预选请求
+     * @param student_id 学生 id
+     * @param topic_id 课题 id
+     * @return 拒绝是否成功结果
+     */
     @Override
     public ResultUtil disagreeStudent(String student_id, String topic_id) {
         // 先检查该学生是否已经取消预选，如果没有
@@ -111,7 +154,7 @@ public class TeacherTopicServiceImpl implements TeacherTopicService {
                 return resultUtil;
             }
             String t_id = tmp.getTopic_id();
-            int state = tmp.getChoice_state();
+            int state = tmp.getChoices().get(0).getChoice_state();
             if (!t_id.equals(topic_id)) {
                 resultUtil = ResultUtil.error("该学生已经取消对于该课题的预选，拒绝失败！");
             }
@@ -119,7 +162,7 @@ public class TeacherTopicServiceImpl implements TeacherTopicService {
                 resultUtil = ResultUtil.error("您已同意该学生的预选，拒绝失败，请刷新页面！");
             }
             else {
-                int res = topicDao.updateDisagree(student_id, topic_id);
+                int res = choiceDao.updateDisagree(student_id, topic_id);
                 if (res > 0) {
                     resultUtil = ResultUtil.ok("拒绝成功！");
                 }
@@ -136,6 +179,11 @@ public class TeacherTopicServiceImpl implements TeacherTopicService {
         return resultUtil;
     }
 
+    /**
+     * 教师删除某个他发布的课题
+     * @param topic_id 课题 id
+     * @return 删除是否成功结果
+     */
     @Override
     public ResultUtil deleteTopic(String topic_id) {
         // 如果该课题已有接收的学生，则不能删除；

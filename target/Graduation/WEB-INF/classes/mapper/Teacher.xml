@@ -21,6 +21,6 @@
         FROM teacher
         LEFT JOIN user
         ON teacher.id = user.id
-        WHERE teacher.college = #{teacher.college}
+        WHERE teacher.college = #{college}
     </select>
 </mapper>

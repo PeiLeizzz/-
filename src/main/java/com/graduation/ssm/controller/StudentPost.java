@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import com.graduation.ssm.service.StudentTopicService;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * 路由功能：接收学生提交相关数据的请求
+ */
 @RequestMapping(value = "/post", method = RequestMethod.POST)
 @Controller
 public class StudentPost {
@@ -19,7 +21,7 @@ public class StudentPost {
 
 
     /**
-     * 学生取消预选
+     * 学生取消预选某课题
      * @param request
      * @return
      */
@@ -37,7 +39,7 @@ public class StudentPost {
     }
 
     /**
-     * 学生预选该课题
+     * 学生预选某课题
      * @param request
      * @return
      */

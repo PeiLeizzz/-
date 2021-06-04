@@ -1,5 +1,8 @@
 package com.graduation.ssm.entity;
 
+/**
+ * 学生类
+ */
 public class Student extends User {
     private String exam_number;
     private int sex;

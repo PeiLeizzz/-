@@ -1,8 +1,10 @@
 package com.graduation.ssm.dao;
 
 import com.graduation.ssm.entity.*;
+import com.graduation.ssm.util.Page;
+import com.graduation.ssm.util.StudentTopicSearch;
+import com.graduation.ssm.util.TeacherTopicSearch;
 import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 
 public interface TopicDao {
@@ -86,45 +88,6 @@ public interface TopicDao {
      * @return
      */
     int getMaxPerson(@Param("topic_id") String topic_id);
-
-    /**
-     * 查询该学生是否已有课题（包括预选和已选）
-     * @param student_id
-     * @return
-     */
-    int getStudentChoice(@Param("student_id") String student_id);
-
-    /**
-     * 学生取消预选课题
-     * @param student_id
-     * @param topic_id
-     * @return
-     */
-    int cancelSelect(@Param("student_id") String student_id, @Param("topic_id") String topic_id);
-
-    /**
-     * 学生预选该课题
-     * @param student_id
-     * @param topic_id
-     * @return
-     */
-    int selectTopic(@Param("student_id") String student_id, @Param("topic_id") String topic_id);
-
-    /**
-     * 教师同意学生预选
-     * @param student_id
-     * @param topic_id
-     * @return
-     */
-    int updateAgree(@Param("student_id") String student_id, @Param("topic_id") String topic_id);
-
-    /**
-     * 教师拒绝学生预选
-     * @param student_id
-     * @param topic_id
-     * @return
-     */
-    int updateDisagree(@Param("student_id") String student_id, @Param("topic_id") String topic_id);
 
     /**
      * 删除课题详情

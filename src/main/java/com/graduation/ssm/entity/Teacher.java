@@ -1,5 +1,8 @@
 package com.graduation.ssm.entity;
 
+/**
+ * 教师类
+ */
 public class Teacher extends User {
     private int sex;
     private String college;

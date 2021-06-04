@@ -1,9 +1,12 @@
 package com.graduation.ssm.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
+import java.util.List;
 
+/**
+ * 课题类
+ */
 public class Topic {
     private String topic_id;
     private String topic_name;
@@ -11,12 +14,14 @@ public class Topic {
     private Date start_time;
     @JsonFormat(pattern="yyyy-MM-dd",timezone = "GMT+8")
     private Date end_time;
-    private int now_person;
-    private int new_person;
+    private int now_person = 0;
+    private int new_person = 0;
     private int max_person = 0;
     private String topic_type;
+    // 1：1 关联发布该课题的教师
     private Teacher teacher;
-    private int choice_state = -1;
+    // 1: n 关联与该课题有关的选择情况
+    private List<Choice> choices;
 
     public String getTopic_id() {
         return topic_id;
@@ -90,11 +95,11 @@ public class Topic {
         this.teacher = teacher;
     }
 
-    public int getChoice_state() {
-        return choice_state;
+    public List<Choice> getChoices() {
+        return choices;
     }
 
-    public void setChoice_state(int choice_state) {
-        this.choice_state = choice_state;
+    public void setChoices(List<Choice> choices) {
+        this.choices = choices;
     }
 }

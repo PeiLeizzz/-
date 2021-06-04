@@ -1,7 +1,7 @@
 package com.graduation.ssm.service;
 
-import com.graduation.ssm.entity.Page;
-import com.graduation.ssm.entity.TeacherTopicSearch;
+import com.graduation.ssm.util.Page;
+import com.graduation.ssm.util.TeacherTopicSearch;
 import com.graduation.ssm.util.ResultUtil;
 
 public interface TeacherTopicService {

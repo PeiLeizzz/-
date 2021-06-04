@@ -1,17 +1,17 @@
 package com.graduation.ssm.controller;
 
-import com.graduation.ssm.entity.Teacher;
 import com.graduation.ssm.service.StudentService;
-import com.graduation.ssm.service.TeacherService;
 import com.graduation.ssm.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * 路由功能：接收查看学生相关信息的请求
+ */
 @RequestMapping(value = "/view", method = RequestMethod.GET)
 @Controller
 public class ViewStudent {
@@ -19,6 +19,11 @@ public class ViewStudent {
     @Autowired
     private StudentService studentService;
 
+    /**
+     * 查看预选某个课题的学生列表
+     * @param request
+     * @return
+     */
     @RequestMapping(value = "/preSelectStudent", method = RequestMethod.GET)
     @ResponseBody
     public ResultUtil getTopicList(HttpServletRequest request) {
@@ -33,15 +38,20 @@ public class ViewStudent {
         return rs;
     }
 
-    @RequestMapping(value = "/studentChoice", method = RequestMethod.GET)
+    /**
+     * 查询与某个学生相关的课题数量
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/studentChoiceCount", method = RequestMethod.GET)
     @ResponseBody
     public ResultUtil getStudentChoice(HttpServletRequest request) {
-        System.out.println("收到 /view/studentChoice 请求");
+        System.out.println("收到 /view/studentChoiceCount 请求");
         //response.addHeader("Access-Control-Allow-Origin", "*"); // 解决跨域问题
         // TODO: 采用 session 获取当前登录的学生id
         String student_id = request.getParameter("student_id");
 
-        ResultUtil rs = studentService.getStudentChoice(student_id);
+        ResultUtil rs = studentService.getStudentChoiceCount(student_id);
         return rs;
     }
 }

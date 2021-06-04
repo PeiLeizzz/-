@@ -1,6 +1,24 @@
 package com.graduation.ssm.util;
+
 import java.io.Serializable;
 
+/**
+ * 返回结果类，用于封装 Layui 需要接收到的结果
+ * 格式：
+ * success: {
+ *     "code": 0,
+ *     "msg": "",
+ *     "count": 0,
+ *     "data": []
+ * }
+ *
+ * error: {
+ *     "code": 500,
+ *     "msg": "",
+ *     "count": 0,
+ *     "data": []
+ * }
+ */
 public class ResultUtil implements Serializable {
 
     private Integer code;

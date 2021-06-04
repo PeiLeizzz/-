@@ -1,5 +1,8 @@
 package com.graduation.ssm.entity;
 
+/**
+ * 用户抽象类
+ */
 public abstract class User {
     private String id;
     private String uname;
